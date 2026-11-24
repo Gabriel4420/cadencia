@@ -1,0 +1,6 @@
+{
+  "name": "Cadência — Gestão de Produtividade",
+  "description": "Aplicação SPA de gestão de atividades com priorização inteligente, integração com calendários, notificações push, modo offline, sincronização em tempo real, gráficos de progresso e gamificação diária.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

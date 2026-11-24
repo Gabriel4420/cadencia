@@ -1,0 +1,278 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --accent-primary: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-fg: #2563EB;
+  --accent-soft: rgba(37, 99, 235, 0.1);
+  --accent-ring: rgba(37, 99, 235, 0.35);
+}
+
+.dark {
+  --accent-primary: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-fg: #60A5FA;
+  --accent-soft: rgba(59, 130, 246, 0.16);
+  --accent-ring: rgba(96, 165, 250, 0.4);
+}
+
+:root[data-accent="emerald"] {
+  --accent-primary: #047857;
+  --accent-hover: #065F46;
+  --accent-fg: #047857;
+  --accent-soft: rgba(4, 120, 87, 0.1);
+  --accent-ring: rgba(4, 120, 87, 0.35);
+}
+.dark[data-accent="emerald"] {
+  --accent-primary: #047857;
+  --accent-hover: #059669;
+  --accent-fg: #34D399;
+  --accent-soft: rgba(16, 185, 129, 0.16);
+  --accent-ring: rgba(52, 211, 153, 0.4);
+}
+
+:root[data-accent="amber"] {
+  --accent-primary: #B45309;
+  --accent-hover: #92400E;
+  --accent-fg: #B45309;
+  --accent-soft: rgba(180, 83, 9, 0.12);
+  --accent-ring: rgba(180, 83, 9, 0.35);
+}
+.dark[data-accent="amber"] {
+  --accent-primary: #B45309;
+  --accent-hover: #D97706;
+  --accent-fg: #FBBF24;
+  --accent-soft: rgba(245, 158, 11, 0.16);
+  --accent-ring: rgba(251, 191, 36, 0.4);
+}
+
+:root[data-accent="slate"] {
+  --accent-primary: #334155;
+  --accent-hover: #1E293B;
+  --accent-fg: #334155;
+  --accent-soft: rgba(51, 65, 85, 0.1);
+  --accent-ring: rgba(51, 65, 85, 0.35);
+}
+.dark[data-accent="slate"] {
+  --accent-primary: #475569;
+  --accent-hover: #334155;
+  --accent-fg: #CBD5E1;
+  --accent-soft: rgba(148, 163, 184, 0.18);
+  --accent-ring: rgba(203, 213, 225, 0.4);
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  .dark body {
+    letter-spacing: 0.008em;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--accent-fg);
+    outline-offset: 2px;
+  }
+}
+
+.accent-bg {
+  background-color: var(--accent-primary);
+}
+.accent-bg:hover {
+  background-color: var(--accent-hover);
+}
+.accent-text {
+  color: var(--accent-fg);
+}
+.accent-soft-bg {
+  background-color: var(--accent-soft);
+}
+.accent-border {
+  border-color: var(--accent-fg);
+}
+
+/* Official Google Sign-In button styling */
+.gsi-material-button {
+  -webkit-user-select: none;
+  user-select: none;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #1f1f1f;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  height: 40px;
+  padding: 0 14px;
+  transition: background-color 150ms ease, border-color 150ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.gsi-material-button:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+.dark .gsi-material-button {
+  background-color: #131b2e;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+.dark .gsi-material-button:hover {
+  background-color: #1e293b;
+  border-color: #475569;
+}
+
+/* Shimmer loading & transition animations (light + dark aware) */
+@keyframes cadencia-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes cadencia-progress-shimmer {
+  0% {
+    transform: translateX(-65%) scaleX(0.35);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateX(15%) scaleX(0.75);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(110%) scaleX(0.35);
+    opacity: 0;
+  }
+}
+
+.shimmer-block {
+  position: relative;
+  overflow: hidden;
+  background-color: #e2e8f0;
+}
+.dark .shimmer-block {
+  background-color: #1e293b;
+}
+.shimmer-block::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.72) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: cadencia-shimmer 1.35s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.dark .shimmer-block::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(148, 163, 184, 0.2) 50%,
+    transparent 100%
+  );
+}
+
+.shimmer-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.42) 50%,
+    transparent 80%
+  );
+  transform: translateX(-100%);
+  animation: cadencia-shimmer 0.52s cubic-bezier(0.16, 1, 0.3, 1) 1;
+}
+.dark .shimmer-sweep::after {
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(148, 163, 184, 0.14) 50%,
+    transparent 80%
+  );
+}
+
+.shimmer-button {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: cadencia-shimmer 1.2s ease-in-out infinite;
+}
+.dark .shimmer-button::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(148, 163, 184, 0.22) 50%,
+    transparent 100%
+  );
+}
+
+.shimmer-progress-track {
+  position: relative;
+  overflow: hidden;
+  height: 2px;
+  width: 100%;
+  background-color: transparent;
+}
+.shimmer-progress-bar {
+  height: 100%;
+  width: 60%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-fg) 50%,
+    transparent 100%
+  );
+  animation: cadencia-progress-shimmer 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

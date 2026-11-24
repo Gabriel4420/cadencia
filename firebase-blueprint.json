@@ -1,0 +1,158 @@
+{
+  "entities": {
+    "Task": {
+      "title": "Task",
+      "description": "A user-owned productivity activity with schedule, priority, and reminder metadata.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "userId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 600
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "completed"]
+        },
+        "dueDate": {
+          "type": "string",
+          "maxLength": 16,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "scheduledTime": {
+          "type": "string",
+          "maxLength": 10
+        },
+        "durationMinutes": {
+          "type": "number"
+        },
+        "reminderMinutesBefore": {
+          "type": "number"
+        },
+        "calendarEventId": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "completedAt": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 40
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "title",
+        "priority",
+        "category",
+        "status",
+        "dueDate",
+        "durationMinutes",
+        "reminderMinutesBefore",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "UserGamificationProfile": {
+      "title": "UserGamificationProfile",
+      "description": "User-owned gamification progress, streaks, coins, and redeemed visual/audio rewards.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "xp": {
+          "type": "number"
+        },
+        "coins": {
+          "type": "number"
+        },
+        "streakDays": {
+          "type": "number"
+        },
+        "streakFreezes": {
+          "type": "number"
+        },
+        "dailyGoal": {
+          "type": "number"
+        },
+        "focusMinutesTotal": {
+          "type": "number"
+        },
+        "lastActiveDate": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "unlockedRewardIds": {
+          "type": "array"
+        },
+        "activeAccent": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "customCategories": {
+          "type": "array",
+          "description": "Optional user-created custom activity categories (max 20 items, each 1..40 chars)."
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 40
+        }
+      },
+      "required": [
+        "userId",
+        "xp",
+        "coins",
+        "streakDays",
+        "streakFreezes",
+        "dailyGoal",
+        "focusMinutesTotal",
+        "unlockedRewardIds",
+        "activeAccent",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/Task" },
+      "description": "Private user productivity tasks synced in real time across devices."
+    },
+    "/users/{userId}/profile/{docId}": {
+      "schema": { "$ref": "#/entities/UserGamificationProfile" },
+      "description": "Private user gamification progress and redeemed rewards."
+    }
+  }
+}

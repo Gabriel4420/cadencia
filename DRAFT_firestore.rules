@@ -1,0 +1,154 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isVerifiedOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidTask(data, userId, taskId) {
+      return data.keys().hasAll([
+        'id', 'userId', 'title', 'priority', 'category', 'status',
+        'dueDate', 'durationMinutes', 'reminderMinutesBefore', 'createdAt', 'updatedAt'
+      ])
+      && data.keys().hasOnly([
+        'id', 'userId', 'title', 'description', 'priority', 'category', 'status',
+        'dueDate', 'scheduledTime', 'durationMinutes', 'reminderMinutesBefore',
+        'calendarEventId', 'completedAt', 'createdAt', 'updatedAt'
+      ])
+      && data.id == taskId
+      && data.userId == userId
+      && data.userId == request.auth.uid
+      && data.title is string && data.title.size() >= 1 && data.title.size() <= 140
+      && (!('description' in data) || (data.description is string && data.description.size() <= 600))
+      && data.priority in ['high', 'medium', 'low']
+      && data.category is string && data.category.size() >= 1 && data.category.size() <= 40
+      && data.status in ['pending', 'completed']
+      && data.dueDate is string && data.dueDate.size() <= 16 && data.dueDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+      && (!('scheduledTime' in data) || (data.scheduledTime is string && data.scheduledTime.size() <= 10))
+      && data.durationMinutes is number && data.durationMinutes >= 5 && data.durationMinutes <= 480
+      && data.reminderMinutesBefore is number && data.reminderMinutesBefore >= 0 && data.reminderMinutesBefore <= 1440
+      && (!('calendarEventId' in data) || (data.calendarEventId is string && data.calendarEventId.size() <= 200))
+      && (!('completedAt' in data) || (data.completedAt is string && data.completedAt.size() <= 40))
+      && data.createdAt is string && data.createdAt.size() <= 40
+      && data.updatedAt is string && data.updatedAt.size() <= 40;
+    }
+
+    function isValidProfile(data, userId) {
+      return data.keys().hasAll([
+        'userId', 'xp', 'coins', 'streakDays', 'streakFreezes',
+        'dailyGoal', 'focusMinutesTotal', 'unlockedRewardIds', 'activeAccent', 'updatedAt'
+      ])
+      && data.keys().hasOnly([
+        'userId', 'xp', 'coins', 'streakDays', 'streakFreezes',
+        'dailyGoal', 'focusMinutesTotal', 'lastActiveDate',
+        'unlockedRewardIds', 'activeAccent', 'customCategories', 'updatedAt'
+      ])
+      && data.userId == userId
+      && data.userId == request.auth.uid
+      && data.xp is number && data.xp >= 0 && data.xp <= 1000000
+      && data.coins is number && data.coins >= 0 && data.coins <= 1000000
+      && data.streakDays is number && data.streakDays >= 0 && data.streakDays <= 10000
+      && data.streakFreezes is number && data.streakFreezes >= 0 && data.streakFreezes <= 50
+      && data.dailyGoal is number && data.dailyGoal >= 1 && data.dailyGoal <= 50
+      && data.focusMinutesTotal is number && data.focusMinutesTotal >= 0 && data.focusMinutesTotal <= 1000000
+      && (!('lastActiveDate' in data) || (data.lastActiveDate is string && data.lastActiveDate.size() <= 16))
+      && data.unlockedRewardIds is list
+      && data.unlockedRewardIds.size() <= 20
+      && (data.unlockedRewardIds.size() == 0 || (data.unlockedRewardIds[0] is string && data.unlockedRewardIds[0].size() <= 64))
+      && data.activeAccent is string && data.activeAccent.size() >= 1 && data.activeAccent.size() <= 32
+      && (
+        !('customCategories' in data)
+        || (
+          data.customCategories is list
+          && data.customCategories.size() <= 20
+          && (
+            data.customCategories.size() == 0
+            || (data.customCategories[0] is string && data.customCategories[0].size() >= 1 && data.customCategories[0].size() <= 40)
+          )
+        )
+      )
+      && data.updatedAt is string && data.updatedAt.size() <= 40;
+    }
+
+    match /users/{userId}/tasks/{taskId} {
+      allow get: if isOwner(userId) && isValidId(userId) && isValidId(taskId);
+      allow list: if isOwner(userId) && resource.data.userId == request.auth.uid;
+
+      allow create: if isVerifiedOwner(userId)
+        && isValidId(userId)
+        && isValidId(taskId)
+        && isValidTask(incoming(), userId, taskId);
+
+      allow update: if isVerifiedOwner(userId)
+        && isValidId(userId)
+        && isValidId(taskId)
+        && isValidTask(incoming(), userId, taskId)
+        && incoming().id == existing().id
+        && incoming().userId == existing().userId
+        && incoming().createdAt == existing().createdAt
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'completedAt', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly([
+            'title', 'description', 'priority', 'category', 'dueDate',
+            'scheduledTime', 'durationMinutes', 'reminderMinutesBefore', 'updatedAt'
+          ])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['calendarEventId', 'updatedAt'])
+        );
+
+      allow delete: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(taskId);
+    }
+
+    match /users/{userId}/profile/{docId} {
+      allow get: if isOwner(userId) && isValidId(userId) && isValidId(docId);
+      allow list: if isOwner(userId) && resource.data.userId == request.auth.uid;
+
+      allow create: if isVerifiedOwner(userId)
+        && isValidId(userId)
+        && docId == 'gamification'
+        && isValidProfile(incoming(), userId);
+
+      allow update: if isVerifiedOwner(userId)
+        && isValidId(userId)
+        && docId == 'gamification'
+        && isValidProfile(incoming(), userId)
+        && incoming().userId == existing().userId
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'xp', 'coins', 'streakDays', 'streakFreezes', 'dailyGoal',
+          'focusMinutesTotal', 'lastActiveDate', 'unlockedRewardIds',
+          'activeAccent', 'customCategories', 'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+  }
+}
